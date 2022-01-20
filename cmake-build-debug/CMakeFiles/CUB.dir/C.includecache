@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/kdakota/CLion_deb/CUB/libft/libft.h
+stdlib.h
+-
+unistd.h
+-
+
+/Users/kdakota/CLion_deb/CUB/main.c
+libft/libft.h
+/Users/kdakota/CLion_deb/CUB/libft/libft.h
+mlx_st/mlx.h
+/Users/kdakota/CLion_deb/CUB/mlx_st/mlx.h
+stdio.h
+-
+unistd.h
+-
+math.h
+-
+pthread.h
+-
+string.h
+-
+stdlib.h
+-
+sys/types.h
+-
+signal.h
+-
+
+/Users/kdakota/CLion_deb/CUB/mlx_st/mlx.h
+
