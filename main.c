@@ -38,6 +38,7 @@ typedef struct s_pc
 {
 	int		mana; // =0
 	t_image	mana_sp;
+	t_image	left_sp;
 	float	pos_x;
 	float	pos_y;
 	float	pos_a;
@@ -70,11 +71,19 @@ typedef struct s_key
 	int y;
 }t_key;
 
-typedef struct s_magic_lst
+typedef struct s_m_a
 {
 	t_image				sp_magic;
+	struct s_m_a	*next;
+}t_m_a;
+
+typedef struct s_magic_lst
+{
+	t_m_a				**m_a;
+	t_image				icon_m;
 	int					type;
 	struct s_magic_lst	*next;
+	struct s_magic_lst	*prev;
 }t_magic_lst;
 
 typedef struct s_magic
@@ -351,6 +360,12 @@ t_color	get_color_sprite(int y, int x, t_image *sprite, int *i)
 {
 	t_color	pix;
 
+	if (!sprite || x < 0 || y < 0 || x > sprite->size.x || y > sprite->size.y)
+	{
+		*i = 0;
+		return (pix);
+	}
+
 	pix.b = (int)sprite->pixels[(sprite->size.x * y + x) * 4];
 	pix.g = (int)sprite->pixels[(sprite->size.x * y + x) * 4 + 1];
 	pix.r = (int)sprite->pixels[(sprite->size.x * y + x) * 4 + 2];
@@ -393,16 +408,15 @@ int	draw_mana(t_main *m)
 	t_color	c_mana;
 //	t_color	c_string;
 
-	y = 925;
+	y = 930;
 	c_mana.a = 0;
 	c_mana.r = 0;
 	c_mana.g = 0;
 	c_mana.b = 255;
-	my_put_image(&m->area.drow, &m->pc.mana_sp, 5, 920);
-	while (y < 965)
+	while (y < 970)
 	{
-		x = 10;
-		while (x < 2 * m->pc.mana)
+		x = 105;
+		while (x < 2 * m->pc.mana + 95)
 		{
 			my_put_pixel(m->area.drow.pixels, x, y, c_mana);
 			x++;
@@ -1198,11 +1212,18 @@ int	mouse_circle(t_main *main)
 
 int	mouse_circle_top(t_main *main)
 {
+	t_magic_lst	*l1;
+	l1 = *main->magic.magic_lst;
+	l1 = l1->next;
+	*main->magic.magic_lst = l1;
+	main->keys.key_top = 0;
 	return (1);
 }
 
 int	mouse_circle_bot(t_main *main)
 {
+	(*main->magic.magic_lst)=(*main->magic.magic_lst)->prev;
+	main->keys.key_bot = 0;
 	return (1);
 }
 
@@ -1210,6 +1231,10 @@ int	check_button(t_main *m)
 {
 	if (m->keys.key_left == 1)
 		mouse_left(m);
+	if (m->keys.key_top == 1)
+		mouse_circle_top(m);
+	if (m->keys.key_bot == 1)
+		mouse_circle_bot(m);
 }
 
 int	draw_spell(t_main *m)
@@ -1217,8 +1242,8 @@ int	draw_spell(t_main *m)
 	t_magic_lst	*l1;
 //	t_magic_lst	*l2;
 
-	if (m->pc.mana > 1)
-		my_put_image(&m->area.drow, &(*m->magic.magic_lst)->next->sp_magic, 300, 300);
+//	if (m->pc.mana > 1)
+//		my_put_image(&m->area.drow, &(*m->magic.magic_lst)->next->sp_magic, 300, 300);
 //	l1 = *m->magic.magic_lst;
 //	l1 = l1->next;
 //	*m->magic.magic_lst = l1;
@@ -1298,6 +1323,12 @@ int	draw_ceil_floor(t_main *m)
 	return (1);
 }
 
+int	draw_type_magic(t_main *m)
+{
+	my_put_image(&m->area.drow, &(*m->magic.magic_lst)->icon_m, 0, m->win.y - 100);
+	return (1);
+}
+
 int	draw_all(t_main *m)
 {
 	mlx_clear_window(m->win.mlx, m->win.win);
@@ -1305,17 +1336,21 @@ int	draw_all(t_main *m)
 	{
 //		draw_ceil_floor(m);
 		draw_wall(m);
+		my_put_image(&m->area.drow, &m->pc.left_sp, 0, m->win.y - 800); //левая рука
 		draw_minimap(m);
+		my_put_image(&m->area.drow, &m->pc.mana_sp, 100, 925); //рамка от маны
 		m->win.draw_w = 0;
 	}
 	check_button(m);
+	draw_type_magic(m);
 	if (m->magic.cast == 1)
 		m->magic.cast = draw_spell(m);
-	//	draw_hands(m);
+//		draw_hands(m);
 	draw_mana(m);
 	mlx_put_image_to_window(m->win.mlx, m->win.win, m->area.drow.r, 0, 0);
-	mlx_string_put(m->win.mlx, m->win.win, 17, 941, 6750207, "MANA");
-	mlx_string_put(m->win.mlx, m->win.win, 60, 941, 6750207, ft_itoa(m->pc.mana));
+//	mlx_put_image_to_window(m->win.mlx, m->win.win, m->pc.left_sp.r, 0, m->win.y - 534);
+	mlx_string_put(m->win.mlx, m->win.win, 112, 946, 6750207, "MANA");
+	mlx_string_put(m->win.mlx, m->win.win, 155, 946, 6750207, ft_itoa(m->pc.mana));
 	return (1);
 }
 
@@ -1326,6 +1361,7 @@ int	loop_h(void *main)
 
 	m = (t_main *)main;
 	draw_all(m);
+//	check_key(key, m);
 	mana(m);
 	return (1);
 }
@@ -1333,6 +1369,7 @@ int	loop_h(void *main)
 int	make_pc(t_pc *pc, t_main *m)
 {
 	pc->mana_sp = ft_new_sprite(m->win.mlx, "../mana.xpm");
+	pc->left_sp = ft_new_sprite(m->win.mlx, "../left_hand.xpm");
 	pc->mana = 50;
 	pc->pos_a = 1.571f;
 	pc->pos_x = 1.1f;
@@ -1454,14 +1491,14 @@ int	mouse_button_re(int key, int x, int y, t_main *m)
 //	printf("%d\n%d\n%d\n", key, x, y);
 	if (key == 1)
 		m->keys.key_left = 0;
-	else if (key == 2)
-		m->keys.key_right = 0;
-	else if (key == 3)
-		m->keys.key_mid = 0;
-	else if (key == 5)
-		m->keys.key_top = 0;
-	else if (key == 4)
-		m->keys.key_bot = 0;
+//	else if (key == 2)
+//		m->keys.key_right = 0;
+//	else if (key == 3)
+//		m->keys.key_mid = 0;
+//	else if (key == 5)
+//		m->keys.key_top = 0;
+//	else if (key == 4)
+//		m->keys.key_bot = 0;
 	return (1);
 }
 
@@ -1478,20 +1515,53 @@ int	make_key(t_key *key, t_main *m)
 int	make_magic(t_magic *magic, t_main *main)
 {
 	t_magic_lst	*lstf;
-	t_magic_lst	*lstw;
+	t_magic_lst	*lstwa;
+	t_magic_lst	*lstt;
+	t_magic_lst	*lsta;
+
+	t_m_a		*l_i0;
+	t_m_a		*l_i1;
+	t_m_a		*l_i2;
+	t_m_a		*l_i3;
+	t_m_a		*l_i4;
 
 	magic->type = 0;
 	magic->cast = 0;
 	lstf = malloc(sizeof(t_magic_lst));
-	lstw = malloc(sizeof(t_magic_lst));
+	lstwa = malloc(sizeof(t_magic_lst));
+	lstt = malloc(sizeof(t_magic_lst));
+	lsta = malloc(sizeof(t_magic_lst));
 	lstf->type = 1;
-	lstw->type = 1;
-	lstf->sp_magic = ft_new_sprite(main->win.mlx, "../pika_b.xpm");
-	lstw->sp_magic = ft_new_sprite(main->win.mlx, "../pika.xpm");
-	lstf->next = lstw;
-	lstw->next = lstf;
+	lstwa->type = 1;
+	lsta->type = 1;
+	lstt->type = 1;
+	lstf->icon_m = ft_new_sprite(main->win.mlx, "../fire_ic.xpm");
+	lstwa->icon_m = ft_new_sprite(main->win.mlx, "../water_ic.xpm");
+	lsta->icon_m = ft_new_sprite(main->win.mlx, "../wind_ic.xpm");
+	lstt->icon_m = ft_new_sprite(main->win.mlx, "../earth_ic.xpm");
+
+	lstf->next = lstwa;
+	lstwa->next = lstt;
+	lstt->next = lsta;
+	lsta->next = lstf;
+
+	lstf->prev = lsta;
+	lstwa->prev = lstf;
+	lstt->prev = lstwa;
+	lsta->prev = lstt;
+
 	magic->magic_lst = malloc(sizeof(t_magic_lst *));
-	*magic->magic_lst = lstw;
+	*magic->magic_lst = lstwa;
+
+//	l_i0 = malloc(sizeof(t_m_a));
+//	l_i0->sp_magic = ft_new_sprite(main->win.mlx, "../fire_ic.xpm");
+//	l_i1 = malloc(sizeof(t_m_a));
+//	l_i1->sp_magic = ft_new_sprite(main->win.mlx, "../water_ic.xpm");
+//	l_i0->next = l_i1;
+//	l_i1->next = l_i0;
+//	main->magic.
+
+	return (1);
 }
 
 int	main(void)

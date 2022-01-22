@@ -78,13 +78,7 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/kdakota/CLion_deb/CUB/libft/libft.h">
-			<Option target="CUB"/>
-		</Unit>
 		<Unit filename="/Users/kdakota/CLion_deb/CUB/main.c">
-			<Option target="CUB"/>
-		</Unit>
-		<Unit filename="/Users/kdakota/CLion_deb/CUB/mlx_st/mlx.h">
 			<Option target="CUB"/>
 		</Unit>
 		<Unit filename="/Users/kdakota/CLion_deb/CUB/CMakeLists.txt">
