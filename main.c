@@ -1329,6 +1329,24 @@ int	draw_type_magic(t_main *m)
 	return (1);
 }
 
+int	draw_left_hand(t_main *m)
+{
+	static int	c;
+	static int	i;
+
+	if (c >= 30 || i == 0)
+	{
+		i = 0;
+		if (c <= 0)
+			i = 1;
+		c -= 2;
+	}
+	else
+		c += 2;
+	my_put_image(&m->area.drow, &m->pc.left_sp, 0, m->win.y - 798 + c);
+	return (1);
+}
+
 int	draw_all(t_main *m)
 {
 	mlx_clear_window(m->win.mlx, m->win.win);
@@ -1336,7 +1354,8 @@ int	draw_all(t_main *m)
 	{
 //		draw_ceil_floor(m);
 		draw_wall(m);
-		my_put_image(&m->area.drow, &m->pc.left_sp, 0, m->win.y - 800); //левая рука
+		draw_left_hand(m);
+//		my_put_image(&m->area.drow, &m->pc.left_sp, 0, m->win.y - 800); //левая рука
 		draw_minimap(m);
 		my_put_image(&m->area.drow, &m->pc.mana_sp, 100, 925); //рамка от маны
 		m->win.draw_w = 0;
